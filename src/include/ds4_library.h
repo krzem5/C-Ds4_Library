@@ -81,20 +81,14 @@ typedef struct __DS4_DEVICE{
 	uint8_t rumble_small;
 	uint8_t rumble_big;
 	uint64_t _last_cfg;
-#ifdef _MSC_VER
-	HANDLE _fh;
-#else
-	int _fh;
-#endif
+	void* _fh;
 	uint8_t _in_bf[64];
 	uint8_t _out_bf[32];
 } ds4_device_t;
 
 
 
-typedef struct __DS4_RAW_DEVICE{
-	char* name;
-} ds4_raw_device_t;
+typedef char* ds4_raw_device_t;
 
 
 
@@ -102,7 +96,7 @@ void _ds4_deinit(ds4_device_t* d);
 
 
 
-_Bool _ds4_init(ds4_raw_device_t* p,ds4_device_t* d);
+void* _ds4_init(ds4_raw_device_t* p,ds4_device_t* d);
 
 
 

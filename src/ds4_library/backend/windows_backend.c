@@ -20,43 +20,23 @@ void _ds4_deinit(ds4_device_t* d){
 
 
 
-_Bool _ds4_init(ds4_raw_device_t* p,ds4_device_t* o){
-	o->_fh=CreateFileA(p->name,(GENERIC_WRITE|GENERIC_READ),FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,0);
-	if (o->_fh==INVALID_HANDLE_VALUE){
-		return 0;
-	}
-	return 1;
+void* _ds4_init(ds4_raw_device_t* p,ds4_device_t* o){
+	HANDLE h=CreateFileA(*p,(GENERIC_WRITE|GENERIC_READ),FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,0);
+	return (h==INVALID_HANDLE_VALUE?NULL:(void*)h);
 }
 
 
 
 _Bool _ds4_recv_data(ds4_device_t* d){
-	OVERLAPPED oe;
-	memset(&oe,0,sizeof(OVERLAPPED));
-	if (!ReadFile(d->_fh,d->_in_bf,64,NULL,&oe)&&GetLastError()!=ERROR_IO_PENDING){
-		ASSERT(!"Device Error!");
-		return 0;
-	}
-	DWORD sz=0;
-	if (!GetOverlappedResult(d->_fh,&oe,&sz,TRUE)){
-		return 0;
-	}
-	return (sz==64);
+	DWORD sz;
+	return (ReadFile((HANDLE)(d->_fh),d->_in_bf,64,&sz,NULL)&&sz==64);
 }
 
 
 
 void _ds4_send_data(ds4_device_t* d){
-	OVERLAPPED oe;
-	memset(&oe,0,sizeof(OVERLAPPED));
-	if (!WriteFile(d->_fh,d->_out_bf,32,NULL,&oe)&&GetLastError()!=ERROR_IO_PENDING){
-		ASSERT(!"Device Error!");
-		return;
-	}
-	DWORD sz=0;
-	if (!GetOverlappedResult(d->_fh,&oe,&sz,TRUE)){
-		d->_last_cfg=DS4_CONFIG_FORCE_UPDATE;
-	}
+	DWORD sz;
+	WriteFile((HANDLE)(d->_fh),d->_out_bf,32,&sz,NULL);
 }
 
 
@@ -116,12 +96,11 @@ ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* l){
 		if (!HidD_GetAttributes(fh,&attr)||attr.VendorID!=SONY_VENDOR_ID||(attr.ProductID!=DS4_PRODUT_ID1&&attr.ProductID!=DS4_PRODUT_ID2)){
 			goto _cleanup_handle;
 		}
-		size_t len=strlen(dev_i->DevicePath)+1;
-		char* name=malloc(len);
-		memcpy(name,dev_i->DevicePath,len);
 		ol++;
 		o=realloc(o,ol*sizeof(ds4_raw_device_t));
-		(o+ol-1)->name=name;
+		size_t len=strlen(dev_i->DevicePath)+1;
+		*(o+ol-1)=malloc(len);
+		memcpy(*(o+ol-1),dev_i->DevicePath,len);
 _cleanup_handle:
 		CloseHandle(fh);
 _cleanup_loop:

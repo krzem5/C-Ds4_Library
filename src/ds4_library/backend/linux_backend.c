@@ -12,29 +12,26 @@ static struct udev* udev_ctx;
 
 
 void _ds4_deinit(ds4_device_t* d){
-	close(d->_fh);
+	close((int)(unsigned long long int)(d->_fh));
 }
 
 
 
-_Bool _ds4_init(ds4_raw_device_t* p,ds4_device_t* o){
-	o->_fh=open(p->name,O_RDWR|O_NONBLOCK);
-	if (o->_fh==-1){
-		return 0;
-	}
-	return 1;
+void* _ds4_init(ds4_raw_device_t* p,ds4_device_t* o){
+	int h=open(*p,O_RDWR|O_NONBLOCK);
+	return (h==-1?NULL:(void*)(unsigned long long int)h);
 }
 
 
 
 _Bool _ds4_recv_data(ds4_device_t* d){
-	return (read(d->_fh,d->_in_bf,64)==64);
+	return (read((int)(unsigned long long int)(d->_fh),d->_in_bf,64)==64);
 }
 
 
 
 void _ds4_send_data(ds4_device_t* d){
-	ssize_t sz=write(d->_fh,d->_out_bf,32);
+	ssize_t sz=write((int)(unsigned long long int)(d->_fh),d->_out_bf,32);
 	if (sz!=32){
 		ASSERT(!"Device error");
 	}
@@ -67,12 +64,11 @@ ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* l){
 		}
 		const char* path=udev_device_get_devnode(dev);
 		if (path){
-			size_t len=strlen(path)+1;
-			char* bf=malloc(len);
-			memcpy(bf,path,len);
 			ol++;
 			o=realloc(o,ol*sizeof(ds4_raw_device_t));
-			(o+ol-1)->name=bf;
+			size_t len=strlen(path)+1;
+			*(o+ol-1)=malloc(len);
+			memcpy(*(o+ol-1),path,len);
 		}
 _cleanup_loop:
 		udev_device_unref(dev);

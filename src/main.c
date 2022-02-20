@@ -1,7 +1,4 @@
 #include <ds4_library.h>
-#ifdef _MSC_VER
-#include <windows.h>
-#endif
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -107,15 +104,12 @@ static void _print_ds4(ds4_device_t* d){
 
 
 int main(int argc,const char** argv){
-#ifdef _MSC_VER
-	SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),7);
-#endif
 	ds4_init();
 	ds4_raw_device_count_t len;
 	ds4_raw_device_t* dev_l=ds4_enumerate_usb(&len);
 	ds4_device_t dev;
 	for (ds4_raw_device_count_t i=0;i<len;i++){
-		printf("Device: %s\n",(dev_l+i)->name);
+		printf("Device: %s\n",*(dev_l+i));
 		if (!i){
 			if (!ds4_connect_device(dev_l+i,&dev)){
 				printf("Failed to connect to device!\n");

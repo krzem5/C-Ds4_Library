@@ -9,7 +9,8 @@
 
 
 _Bool ds4_connect_device(ds4_raw_device_t* p,ds4_device_t* o){
-	if (!_ds4_init(p,o)){
+	void* fh=_ds4_init(p,o);
+	if (!fh){
 		return 0;
 	}
 	o->buttons=0;
@@ -38,6 +39,7 @@ _Bool ds4_connect_device(ds4_raw_device_t* p,ds4_device_t* o){
 	o->led_off=0;
 	o->rumble_small=0;
 	o->rumble_big=0;
+	o->_fh=fh;
 	return 1;
 }
 
@@ -63,7 +65,7 @@ void ds4_disconnect_device(ds4_device_t* d){
 void ds4_free_enumeration(ds4_raw_device_t* p,ds4_raw_device_count_t l){
 	while (l){
 		l--;
-		free((p+l)->name);
+		free(*(p+l));
 	}
 	free(p);
 }
