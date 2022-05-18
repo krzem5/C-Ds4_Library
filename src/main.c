@@ -79,8 +79,8 @@ static void _print_ds4(ds4_device_t* d){
 	if (d->buttons&DS4_BUTTON_SHARE){
 		printf(" share");
 	}
-	if (d->buttons&DS4_BUTTON_PS){
-		printf(" PS");
+	if (d->buttons&DS4_BUTTON_LOGO){
+		printf(" logo");
 	}
 	if (d->buttons&DS4_BUTTON_TOUCHPAD){
 		printf(" touchpad");
@@ -125,7 +125,7 @@ int main(int argc,const char** argv){
 			dev.rumble_small=dev.l2;
 			dev.rumble_big=dev.r2;
 			ds4_send_config(&dev);
-			if (dev.buttons&DS4_BUTTON_PS){
+			if (dev.buttons&DS4_BUTTON_LOGO){
 				break;
 			}
 		}

@@ -148,7 +148,7 @@ void ds4_update(ds4_device_t* d){
 		d->buttons|=DS4_BUTTON_R3;
 	}
 	if (d->_in_bf[7]&1){
-		d->buttons|=DS4_BUTTON_PS;
+		d->buttons|=DS4_BUTTON_LOGO;
 	}
 	if (d->_in_bf[7]&2){
 		d->buttons|=DS4_BUTTON_TOUCHPAD;
