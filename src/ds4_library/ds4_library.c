@@ -161,12 +161,12 @@ void ds4_update(ds4_device_t* d){
 	d->r2=d->_in_bf[9];
 	d->timestamp=d->_in_bf[7]>>2;
 	d->battery=((d->_in_bf[30]&0xf)==11?0:d->_in_bf[30]<<5);
-	d->acc_x=((float)(int16_t)(d->_in_bf[13]|(d->_in_bf[14]<<8)))*ACCELERATION_FACTOR;
-	d->acc_y=((float)(int16_t)(d->_in_bf[15]|(d->_in_bf[16]<<8)))*ACCELERATION_FACTOR;
-	d->acc_z=((float)(int16_t)(d->_in_bf[17]|(d->_in_bf[18]<<8)))*ACCELERATION_FACTOR;
-	d->avel_x=((float)(int16_t)(d->_in_bf[19]|(d->_in_bf[20]<<8)))*-ANGULAR_VELOCITY_FACTOR;
-	d->avel_y=((float)(int16_t)(d->_in_bf[21]|(d->_in_bf[22]<<8)))*ANGULAR_VELOCITY_FACTOR;
-	d->avel_z=((float)(int16_t)(d->_in_bf[23]|(d->_in_bf[24]<<8)))*ANGULAR_VELOCITY_FACTOR;
+	d->avel_x=((float)(int16_t)(d->_in_bf[13]|(d->_in_bf[14]<<8)))*-ANGULAR_VELOCITY_FACTOR;
+	d->avel_y=((float)(int16_t)(d->_in_bf[15]|(d->_in_bf[16]<<8)))*ANGULAR_VELOCITY_FACTOR;
+	d->avel_z=((float)(int16_t)(d->_in_bf[17]|(d->_in_bf[18]<<8)))*ANGULAR_VELOCITY_FACTOR;
+	d->acc_x=((float)(int16_t)(d->_in_bf[19]|(d->_in_bf[20]<<8)))*ACCELERATION_FACTOR;
+	d->acc_y=((float)(int16_t)(d->_in_bf[21]|(d->_in_bf[22]<<8)))*ACCELERATION_FACTOR;
+	d->acc_z=((float)(int16_t)(d->_in_bf[23]|(d->_in_bf[24]<<8)))*ACCELERATION_FACTOR;
 	d->touch[0].x=d->_in_bf[36]|((d->_in_bf[37]&0x0f)<<8);
 	d->touch[0].y=((d->_in_bf[37]&0xf0)>>4)|(d->_in_bf[38]<<4);
 	d->touch[0].id=(d->_in_bf[35]>>7?DS4_NO_DATA:d->_in_bf[35]&0x7f);
