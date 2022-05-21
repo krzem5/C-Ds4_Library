@@ -68,12 +68,12 @@ typedef struct __DS4_DEVICE{
 	uint8_t r2;
 	uint8_t timestamp;
 	uint8_t battery;
-	float acc_x;
-	float acc_y;
-	float acc_z;
 	float avel_x;
 	float avel_y;
 	float avel_z;
+	float acc_x;
+	float acc_y;
+	float acc_z;
 	ds4_touch_point_t touch[2];
 	uint32_t color;
 	uint8_t led_on;

@@ -22,12 +22,12 @@ _Bool ds4_connect_device(ds4_raw_device_t* p,ds4_device_t* o){
 	o->ry=0;
 	o->timestamp=0;
 	o->battery=0;
-	o->acc_x=0;
-	o->acc_y=0;
-	o->acc_z=0;
 	o->avel_x=0;
 	o->avel_y=0;
 	o->avel_z=0;
+	o->acc_x=0;
+	o->acc_y=0;
+	o->acc_z=0;
 	o->touch[0].x=0;
 	o->touch[0].y=0;
 	o->touch[0].id=0;
