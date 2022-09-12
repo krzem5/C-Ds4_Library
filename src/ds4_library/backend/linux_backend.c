@@ -40,7 +40,7 @@ void _ds4_send_data(ds4_device_t* d){
 
 
 void ds4_deinit(void){
-	udev_ctx=udev_new();
+	udev_unref(udev_ctx);
 }
 
 
@@ -82,5 +82,5 @@ _cleanup_loop:
 
 
 void ds4_init(void){
-	udev_unref(udev_ctx);
+	udev_ctx=udev_new();
 }
