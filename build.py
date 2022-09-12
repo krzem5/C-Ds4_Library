@@ -40,22 +40,22 @@ else:
 		for r,_,cfl in os.walk("src"):
 			r=r.replace("\\","/").strip("/")+"/"
 			for f in cfl:
-				if (f[-2:]==".c" and ("backend/" not in r or f=="linux_backend.c")):
+				if (f[-2:]==".c" and ("backend" not in r or f=="linux_backend.c")):
 					fl.append(f"build/{(r+f).replace('/','$')}.o")
 					if (subprocess.run(["gcc","-Wall","-lm","-Werror","-O3","-c",r+f,"-o",f"build/{(r+f).replace('/','$')}.o","-Isrc/include"]).returncode!=0):
 						sys.exit(1)
-		if (subprocess.run(["gcc","-Wall","-lm","-Werror","-O3","-c",r+f,"-o",f"build/{(r+f).replace('/','$')}.o","-Isrc/include"]).returncode!=0 or subprocess.run(["gcc","-o","build/ds4_library"]+fl+["-ludev"]).returncode!=0):
+		if (subprocess.run(["gcc","-o","build/ds4_library"]+fl+["-ludev"]).returncode!=0):
 			sys.exit(1)
 	else:
 		fl=[]
 		for r,_,cfl in os.walk("src"):
 			r=r.replace("\\","/").strip("/")+"/"
 			for f in cfl:
-				if (f[-2:]==".c" and ("backend/" not in r or f=="linux_backend.c")):
+				if (f[-2:]==".c" and ("backend" not in r or f=="linux_backend.c")):
 					fl.append(f"build/{(r+f).replace('/','$')}.o")
 					if (subprocess.run(["gcc","-Wall","-lm","-Werror","-O0","-c",r+f,"-o",f"build/{(r+f).replace('/','$')}.o","-Isrc/include"]).returncode!=0):
 						sys.exit(1)
-		if (subprocess.run(["gcc","-Wall","-lm","-Werror","-O0","-c",r+f,"-o",f"build/{(r+f).replace('/','$')}.o","-Isrc/include"]).returncode!=0 or subprocess.run(["gcc","-o","build/ds4_library"]+fl+["-ludev"]).returncode!=0):
+		if (subprocess.run(["gcc","-o","build/ds4_library"]+fl+["-ludev"]).returncode!=0):
 			sys.exit(1)
 	if ("--run" in sys.argv):
 		subprocess.run(["build/ds4_library"]+DEFAULT_ARGS)
