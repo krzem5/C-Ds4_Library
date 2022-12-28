@@ -14,29 +14,29 @@
 
 
 
-void _ds4_deinit(ds4_device_t* d){
-	CancelIo(d->_fh);
+void _ds4_deinit(const ds4_device_t* device){
+	CancelIo(device->_handle);
 }
 
 
 
-void* _ds4_init(ds4_raw_device_t* p,ds4_device_t* o){
-	HANDLE h=CreateFileA(*p,(GENERIC_WRITE|GENERIC_READ),FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,0);
+void* _ds4_init(const ds4_raw_device_t* raw){
+	HANDLE h=CreateFileA(*raw,(GENERIC_WRITE|GENERIC_READ),FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,0);
 	return (h==INVALID_HANDLE_VALUE?NULL:(void*)h);
 }
 
 
 
-_Bool _ds4_recv_data(ds4_device_t* d){
+_Bool _ds4_recv_data(ds4_device_t* device){
 	DWORD sz;
-	return (ReadFile((HANDLE)(d->_fh),d->_in_bf,64,&sz,NULL)&&sz==64);
+	return (ReadFile((HANDLE)(device->_handle),device->_in_buffer,64,&sz,NULL)&&sz==64);
 }
 
 
 
-void _ds4_send_data(ds4_device_t* d){
+void _ds4_send_data(const ds4_device_t* device){
 	DWORD sz;
-	WriteFile((HANDLE)(d->_fh),d->_out_bf,32,&sz,NULL);
+	WriteFile((HANDLE)(device->_handle),device->_out_buffer,32,&sz,NULL);
 }
 
 
@@ -46,9 +46,9 @@ void ds4_deinit(void){
 
 
 
-ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* l){
-	ds4_raw_device_t* o=NULL;
-	ds4_raw_device_count_t ol=0;
+ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* count){
+	ds4_raw_device_t* out=NULL;
+	ds4_raw_device_count_t length=0;
 	GUID i_guid=GUID_DEVINTERFACE_HID;
 	HDEVINFO dev_list=SetupDiGetClassDevsA(&i_guid,NULL,NULL,DIGCF_PRESENT|DIGCF_DEVICEINTERFACE);
 	uint32_t dev_list_idx=0;
@@ -96,19 +96,19 @@ ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* l){
 		if (!HidD_GetAttributes(fh,&attr)||attr.VendorID!=SONY_VENDOR_ID||(attr.ProductID!=DS4_PRODUT_ID1&&attr.ProductID!=DS4_PRODUT_ID2)){
 			goto _cleanup_handle;
 		}
-		ol++;
-		o=realloc(o,ol*sizeof(ds4_raw_device_t));
+		length++;
+		out=realloc(out,length*sizeof(ds4_raw_device_t));
 		size_t len=strlen(dev_i->DevicePath)+1;
-		*(o+ol-1)=malloc(len);
-		memcpy(*(o+ol-1),dev_i->DevicePath,len);
+		*(out+length-1)=malloc(len);
+		memcpy(*(out+length-1),dev_i->DevicePath,len);
 _cleanup_handle:
 		CloseHandle(fh);
 _cleanup_loop:
 		free(dev_i);
 	}
 	SetupDiDestroyDeviceInfoList(dev_list);
-	*l=ol;
-	return o;
+	*count=length;
+	return out;
 }
 
 

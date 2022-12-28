@@ -8,169 +8,170 @@
 
 
 
-_Bool ds4_connect_device(ds4_raw_device_t* p,ds4_device_t* o){
-	void* fh=_ds4_init(p,o);
-	if (!fh){
+_Bool ds4_connect_device(const ds4_raw_device_t* raw,ds4_device_t* out){
+	void* handle=_ds4_init(raw);
+	if (!handle){
 		return 0;
 	}
-	o->buttons=0;
-	o->l2=0;
-	o->r2=0;
-	o->lx=0;
-	o->ly=0;
-	o->rx=0;
-	o->ry=0;
-	o->timestamp=0;
-	o->battery=0;
-	o->avel_x=0;
-	o->avel_y=0;
-	o->avel_z=0;
-	o->acc_x=0;
-	o->acc_y=0;
-	o->acc_z=0;
-	o->touch[0].x=0;
-	o->touch[0].y=0;
-	o->touch[0].id=0;
-	o->touch[1].x=0;
-	o->touch[1].y=0;
-	o->touch[1].id=0;
-	o->color=0;
-	o->led_on=0;
-	o->led_off=0;
-	o->rumble_small=0;
-	o->rumble_big=0;
-	o->_fh=fh;
+	out->buttons=0;
+	out->l2=0;
+	out->r2=0;
+	out->lx=0;
+	out->ly=0;
+	out->rx=0;
+	out->ry=0;
+	out->timestamp=0;
+	out->battery=0;
+	out->avel_x=0;
+	out->avel_y=0;
+	out->avel_z=0;
+	out->acc_x=0;
+	out->acc_y=0;
+	out->acc_z=0;
+	out->touch[0].x=0;
+	out->touch[0].y=0;
+	out->touch[0].id=0;
+	out->touch[1].x=0;
+	out->touch[1].y=0;
+	out->touch[1].id=0;
+	out->color=0;
+	out->led_on=0;
+	out->led_off=0;
+	out->rumble_small=0;
+	out->rumble_big=0;
+	out->_last_config=0;
+	out->_handle=handle;
 	return 1;
 }
 
 
 
-void ds4_disconnect_device(ds4_device_t* d){
-	d->_out_bf[0]=0x05;
-	d->_out_bf[1]=0x7f;
-	d->_out_bf[2]=0x04;
-	d->_out_bf[4]=0;
-	d->_out_bf[5]=0;
-	d->_out_bf[6]=0;
-	d->_out_bf[7]=0;
-	d->_out_bf[8]=0;
-	d->_out_bf[9]=0;
-	d->_out_bf[10]=0;
-	_ds4_send_data(d);
-	_ds4_deinit(d);
+void ds4_disconnect_device(ds4_device_t* device){
+	device->_out_buffer[0]=0x05;
+	device->_out_buffer[1]=0x7f;
+	device->_out_buffer[2]=0x04;
+	device->_out_buffer[4]=0;
+	device->_out_buffer[5]=0;
+	device->_out_buffer[6]=0;
+	device->_out_buffer[7]=0;
+	device->_out_buffer[8]=0;
+	device->_out_buffer[9]=0;
+	device->_out_buffer[10]=0;
+	_ds4_send_data(device);
+	_ds4_deinit(device);
 }
 
 
 
-void ds4_free_enumeration(ds4_raw_device_t* p,ds4_raw_device_count_t l){
-	while (l){
-		l--;
-		free(*(p+l));
+void ds4_free_enumeration(ds4_raw_device_t* raw,ds4_raw_device_count_t count){
+	while (count){
+		count--;
+		free((void*)(raw[count]));
 	}
-	free(p);
+	free(raw);
 }
 
 
 
-void ds4_send_config(ds4_device_t* d){
-	uint64_t cfg=(d->color&0xffffff)|(((uint64_t)(d->led_on))<<24)|(((uint64_t)(d->led_off))<<32)|(((uint64_t)(d->rumble_small))<<40)|(((uint64_t)(d->rumble_big))<<48);
-	if (cfg==d->_last_cfg){
+void ds4_send_config(ds4_device_t* device){
+	uint64_t config=(device->color&0xffffff)|(((uint64_t)(device->led_on))<<24)|(((uint64_t)(device->led_off))<<32)|(((uint64_t)(device->rumble_small))<<40)|(((uint64_t)(device->rumble_big))<<48);
+	if (config==device->_last_config){
 		return;
 	}
-	d->_last_cfg=cfg;
-	d->_out_bf[0]=0x05;
-	d->_out_bf[1]=0x7f;
-	d->_out_bf[2]=0x04;
-	d->_out_bf[4]=d->rumble_small;
-	d->_out_bf[5]=d->rumble_big;
-	d->_out_bf[6]=d->color&0xff;
-	d->_out_bf[7]=(d->color>>8)&0xff;
-	d->_out_bf[8]=d->color>>16;
-	d->_out_bf[9]=d->led_on;
-	d->_out_bf[10]=d->led_off;
-	_ds4_send_data(d);
+	device->_last_config=config;
+	device->_out_buffer[0]=0x05;
+	device->_out_buffer[1]=0x7f;
+	device->_out_buffer[2]=0x04;
+	device->_out_buffer[4]=device->rumble_small;
+	device->_out_buffer[5]=device->rumble_big;
+	device->_out_buffer[6]=device->color&0xff;
+	device->_out_buffer[7]=(device->color>>8)&0xff;
+	device->_out_buffer[8]=device->color>>16;
+	device->_out_buffer[9]=device->led_on;
+	device->_out_buffer[10]=device->led_off;
+	_ds4_send_data(device);
 }
 
 
 
-void ds4_update(ds4_device_t* d){
-	if (!_ds4_recv_data(d)){
+void ds4_update(ds4_device_t* device){
+	if (!_ds4_recv_data(device)){
 		return;
 	}
-	d->buttons=0;
-	uint8_t dp=d->_in_bf[5]&0x0f;
+	device->buttons=0;
+	uint8_t dp=device->_in_buffer[5]&0x0f;
 	if (dp==0||dp==1||dp==7){
-		d->buttons|=DS4_BUTTON_UP;
+		device->buttons|=DS4_BUTTON_UP;
 	}
 	if (dp>=3&&dp<=5){
-		d->buttons|=DS4_BUTTON_DOWN;
+		device->buttons|=DS4_BUTTON_DOWN;
 	}
 	if (dp>=5&&dp<=7){
-		d->buttons|=DS4_BUTTON_LEFT;
+		device->buttons|=DS4_BUTTON_LEFT;
 	}
 	if (dp>=1&&dp<=3){
-		d->buttons|=DS4_BUTTON_RIGHT;
+		device->buttons|=DS4_BUTTON_RIGHT;
 	}
-	if (d->_in_bf[5]&32){
-		d->buttons|=DS4_BUTTON_CROSS;
+	if (device->_in_buffer[5]&32){
+		device->buttons|=DS4_BUTTON_CROSS;
 	}
-	if (d->_in_bf[5]&64){
-		d->buttons|=DS4_BUTTON_CIRCLE;
+	if (device->_in_buffer[5]&64){
+		device->buttons|=DS4_BUTTON_CIRCLE;
 	}
-	if (d->_in_bf[5]&16){
-		d->buttons|=DS4_BUTTON_SQURARE;
+	if (device->_in_buffer[5]&16){
+		device->buttons|=DS4_BUTTON_SQURARE;
 	}
-	if (d->_in_bf[5]&128){
-		d->buttons|=DS4_BUTTON_TRIANGLE;
+	if (device->_in_buffer[5]&128){
+		device->buttons|=DS4_BUTTON_TRIANGLE;
 	}
-	if (d->_in_bf[6]&1){
-		d->buttons|=DS4_BUTTON_L1;
+	if (device->_in_buffer[6]&1){
+		device->buttons|=DS4_BUTTON_L1;
 	}
-	if (d->_in_bf[6]&2){
-		d->buttons|=DS4_BUTTON_R1;
+	if (device->_in_buffer[6]&2){
+		device->buttons|=DS4_BUTTON_R1;
 	}
-	if (d->_in_bf[6]&4){
-		d->buttons|=DS4_BUTTON_L2;
+	if (device->_in_buffer[6]&4){
+		device->buttons|=DS4_BUTTON_L2;
 	}
-	if (d->_in_bf[6]&8){
-		d->buttons|=DS4_BUTTON_R2;
+	if (device->_in_buffer[6]&8){
+		device->buttons|=DS4_BUTTON_R2;
 	}
-	if (d->_in_bf[6]&16){
-		d->buttons|=DS4_BUTTON_SHARE;
+	if (device->_in_buffer[6]&16){
+		device->buttons|=DS4_BUTTON_SHARE;
 	}
-	if (d->_in_bf[6]&32){
-		d->buttons|=DS4_BUTTON_OPTIONS;
+	if (device->_in_buffer[6]&32){
+		device->buttons|=DS4_BUTTON_OPTIONS;
 	}
-	if (d->_in_bf[6]&64){
-		d->buttons|=DS4_BUTTON_L3;
+	if (device->_in_buffer[6]&64){
+		device->buttons|=DS4_BUTTON_L3;
 	}
-	if (d->_in_bf[6]&128){
-		d->buttons|=DS4_BUTTON_R3;
+	if (device->_in_buffer[6]&128){
+		device->buttons|=DS4_BUTTON_R3;
 	}
-	if (d->_in_bf[7]&1){
-		d->buttons|=DS4_BUTTON_LOGO;
+	if (device->_in_buffer[7]&1){
+		device->buttons|=DS4_BUTTON_LOGO;
 	}
-	if (d->_in_bf[7]&2){
-		d->buttons|=DS4_BUTTON_TOUCHPAD;
+	if (device->_in_buffer[7]&2){
+		device->buttons|=DS4_BUTTON_TOUCHPAD;
 	}
-	d->lx=-128+d->_in_bf[1];
-	d->ly=127-d->_in_bf[2];
-	d->rx=-128+d->_in_bf[3];
-	d->ry=127-d->_in_bf[4];
-	d->l2=d->_in_bf[8];
-	d->r2=d->_in_bf[9];
-	d->timestamp=d->_in_bf[7]>>2;
-	d->battery=((d->_in_bf[30]&0xf)==11?0:d->_in_bf[30]<<5);
-	d->avel_x=((float)(int16_t)(d->_in_bf[13]|(d->_in_bf[14]<<8)))*-ANGULAR_VELOCITY_FACTOR;
-	d->avel_y=((float)(int16_t)(d->_in_bf[15]|(d->_in_bf[16]<<8)))*ANGULAR_VELOCITY_FACTOR;
-	d->avel_z=((float)(int16_t)(d->_in_bf[17]|(d->_in_bf[18]<<8)))*ANGULAR_VELOCITY_FACTOR;
-	d->acc_x=((float)(int16_t)(d->_in_bf[19]|(d->_in_bf[20]<<8)))*ACCELERATION_FACTOR;
-	d->acc_y=((float)(int16_t)(d->_in_bf[21]|(d->_in_bf[22]<<8)))*ACCELERATION_FACTOR;
-	d->acc_z=((float)(int16_t)(d->_in_bf[23]|(d->_in_bf[24]<<8)))*ACCELERATION_FACTOR;
-	d->touch[0].x=d->_in_bf[36]|((d->_in_bf[37]&0x0f)<<8);
-	d->touch[0].y=((d->_in_bf[37]&0xf0)>>4)|(d->_in_bf[38]<<4);
-	d->touch[0].id=(d->_in_bf[35]>>7?DS4_NO_DATA:d->_in_bf[35]&0x7f);
-	d->touch[1].x=d->_in_bf[40]|((d->_in_bf[41]&0x0f)<<8);
-	d->touch[1].y=((d->_in_bf[41]&0xf0)>>4)|(d->_in_bf[42]<<4);
-	d->touch[1].id=(d->_in_bf[39]>>7?DS4_NO_DATA:d->_in_bf[39]&0x7f);
+	device->lx=-128+device->_in_buffer[1];
+	device->ly=127-device->_in_buffer[2];
+	device->rx=-128+device->_in_buffer[3];
+	device->ry=127-device->_in_buffer[4];
+	device->l2=device->_in_buffer[8];
+	device->r2=device->_in_buffer[9];
+	device->timestamp=device->_in_buffer[7]>>2;
+	device->battery=((device->_in_buffer[30]&0xf)==11?0:device->_in_buffer[30]<<5);
+	device->avel_x=((float)(int16_t)(device->_in_buffer[13]|(device->_in_buffer[14]<<8)))*-ANGULAR_VELOCITY_FACTOR;
+	device->avel_y=((float)(int16_t)(device->_in_buffer[15]|(device->_in_buffer[16]<<8)))*ANGULAR_VELOCITY_FACTOR;
+	device->avel_z=((float)(int16_t)(device->_in_buffer[17]|(device->_in_buffer[18]<<8)))*ANGULAR_VELOCITY_FACTOR;
+	device->acc_x=((float)(int16_t)(device->_in_buffer[19]|(device->_in_buffer[20]<<8)))*ACCELERATION_FACTOR;
+	device->acc_y=((float)(int16_t)(device->_in_buffer[21]|(device->_in_buffer[22]<<8)))*ACCELERATION_FACTOR;
+	device->acc_z=((float)(int16_t)(device->_in_buffer[23]|(device->_in_buffer[24]<<8)))*ACCELERATION_FACTOR;
+	device->touch[0].x=device->_in_buffer[36]|((device->_in_buffer[37]&0x0f)<<8);
+	device->touch[0].y=((device->_in_buffer[37]&0xf0)>>4)|(device->_in_buffer[38]<<4);
+	device->touch[0].id=(device->_in_buffer[35]>>7?DS4_NO_DATA:device->_in_buffer[35]&0x7f);
+	device->touch[1].x=device->_in_buffer[40]|((device->_in_buffer[41]&0x0f)<<8);
+	device->touch[1].y=((device->_in_buffer[41]&0xf0)>>4)|(device->_in_buffer[42]<<4);
+	device->touch[1].id=(device->_in_buffer[39]>>7?DS4_NO_DATA:device->_in_buffer[39]&0x7f);
 }

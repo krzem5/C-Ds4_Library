@@ -80,35 +80,35 @@ typedef struct __DS4_DEVICE{
 	uint8_t led_off;
 	uint8_t rumble_small;
 	uint8_t rumble_big;
-	uint64_t _last_cfg;
-	void* _fh;
-	uint8_t _in_bf[64];
-	uint8_t _out_bf[32];
+	uint64_t _last_config;
+	void* _handle;
+	uint8_t _in_buffer[64];
+	uint8_t _out_buffer[32];
 } ds4_device_t;
 
 
 
-typedef char* ds4_raw_device_t;
+typedef const char* ds4_raw_device_t;
 
 
 
-void _ds4_deinit(ds4_device_t* d);
+void _ds4_deinit(const ds4_device_t* device);
 
 
 
-void* _ds4_init(ds4_raw_device_t* p,ds4_device_t* d);
+void* _ds4_init(const ds4_raw_device_t* raw);
 
 
 
-_Bool _ds4_recv_data(ds4_device_t* d);
+_Bool _ds4_recv_data(ds4_device_t* device);
 
 
 
-void _ds4_send_data(ds4_device_t* d);
+void _ds4_send_data(const ds4_device_t* device);
 
 
 
-_Bool ds4_connect_device(ds4_raw_device_t* p,ds4_device_t* o);
+_Bool ds4_connect_device(const ds4_raw_device_t* raw,ds4_device_t* out);
 
 
 
@@ -116,15 +116,15 @@ void ds4_deinit(void);
 
 
 
-void ds4_disconnect_device(ds4_device_t* o);
+void ds4_disconnect_device(ds4_device_t* out);
 
 
 
-ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* l);
+ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* count);
 
 
 
-void ds4_free_enumeration(ds4_raw_device_t* p,ds4_raw_device_count_t l);
+void ds4_free_enumeration(ds4_raw_device_t* raw,ds4_raw_device_count_t count);
 
 
 
@@ -132,11 +132,11 @@ void ds4_init(void);
 
 
 
-void ds4_send_config(ds4_device_t* d);
+void ds4_send_config(ds4_device_t* device);
 
 
 
-void ds4_update(ds4_device_t* d);
+void ds4_update(ds4_device_t* device);
 
 
 
