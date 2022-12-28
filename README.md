@@ -28,3 +28,7 @@ KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0664", GROUP="ds4_hidraw"
 Add all required users to the group `ds4_hidraw`: `usermod -a -G ds4_hidraw <username>`
 
 Reboot to apply all changes.
+
+## Linux bluetooth pairing process
+
+Hold Logo + Share and wait for connection.
