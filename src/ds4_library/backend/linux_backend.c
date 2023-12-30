@@ -57,8 +57,8 @@ ds4_raw_device_t* ds4_enumerate_usb(ds4_raw_device_count_t* count){
 		if (!parent||strcmp(udev_device_get_subsystem(parent),"hid")){
 			goto _cleanup_loop;
 		}
-		const char* name=udev_device_get_property_value(parent,"HID_NAME");
-		if (!name||(strcmp(name,"Sony Interactive Entertainment Wireless Controller")&&strcmp(name,"Sony Computer Entertainment Wireless Controller"))){
+		const char* nm=udev_device_get_property_value(parent,"HID_NAME");
+		if (!nm||(strcmp(nm,"Sony Interactive Entertainment Wireless Controller")&&strcmp(nm,"Sony Computer Entertainment Wireless Controller"))){
 			goto _cleanup_loop;
 		}
 		const char* path=udev_device_get_devnode(dev);
